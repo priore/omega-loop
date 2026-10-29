@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Installa OMEGA-LOOP a livello utente (~/.claude). Sicuro da rilanciare: aggiorna senza toccare le tue impostazioni.
+# Installs OMEGA-LOOP at user level (~/.claude). Safe to re-run: updates without touching your settings.
 set -eu
 SRC="$(cd "$(dirname "$0")" && pwd)"
 DEST="$HOME/.claude"
-command -v python3 >/dev/null || { echo "Serve python3." >&2; exit 1; }
-command -v claude  >/dev/null || echo "Attenzione: 'claude' non trovato nel PATH (Claude Code è necessario)."
+command -v python3 >/dev/null || { echo "python3 is required." >&2; exit 1; }
+command -v claude  >/dev/null || echo "Warning: 'claude' not found in PATH (Claude Code is required)."
 
 mkdir -p "$DEST/omega" "$DEST/skills/omega-loop"
-# non sovrascrive projects.json (impostazioni locali dell'utente)
+# does not overwrite projects.json (the user's local settings)
 [ -f "$DEST/omega/projects.json" ] && KEEP=$(cat "$DEST/omega/projects.json") || KEEP=""
 cp -R "$SRC/omega/." "$DEST/omega/"
 rm -f "$DEST/omega/projects.example.json"
@@ -15,7 +15,7 @@ if [ -n "$KEEP" ]; then printf '%s\n' "$KEEP" > "$DEST/omega/projects.json"; els
 cp "$SRC/skill/SKILL.md" "$DEST/skills/omega-loop/SKILL.md"
 chmod +x "$DEST"/omega/*.sh "$DEST"/omega/skills/*.sh "$DEST"/omega/skills/*.py
 
-# hook SessionStart in settings.json (con backup, idempotente)
+# SessionStart hook in settings.json (with backup, idempotent)
 python3 - <<'PY'
 import json, os, shutil
 p = os.path.expanduser("~/.claude/settings.json")
@@ -28,11 +28,11 @@ if not any(h.get("command") == cmd for e in lst for h in e.get("hooks", [])):
 json.dump(s, open(p, "w"), indent=2)
 PY
 
-# .omega/ fuori da git in tutti i tuoi repo
+# keep .omega/ out of git in all your repos
 G=$(git config --global core.excludesfile || true)
 if [ -z "$G" ]; then G="$HOME/.gitignore_global"; git config --global core.excludesfile "$G"; fi
 G="${G/#\~/$HOME}"
 touch "$G"; grep -qx '.omega/' "$G" || echo '.omega/' >> "$G"
 
-echo "OMEGA-LOOP installato. Apri una NUOVA chat di Claude Code e scrivi: /omega-loop <cosa vuoi fare>"
-command -v codex >/dev/null && echo "Codex rilevato: modalità ibrida attiva." || echo "Codex non rilevato: funziona solo con Claude (si attiverà da solo se lo installi)."
+echo "OMEGA-LOOP v$(cat "$SRC/VERSION") installed. Open a NEW Claude Code chat and type: /omega-loop <what you want to do>"
+command -v codex >/dev/null && echo "Codex detected: hybrid mode active." || echo "Codex not detected: running Claude-only (it will be picked up automatically if you install it)."

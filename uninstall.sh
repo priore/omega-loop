@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Rimuove OMEGA-LOOP da ~/.claude (hook compreso). Non tocca i tuoi repo né le cartelle .omega/.
+# Removes OMEGA-LOOP from ~/.claude (hook included). Does not touch your repos or the .omega/ folders.
 set -eu
 python3 - <<'PY'
 import json, os
@@ -13,4 +13,4 @@ if os.path.exists(p):
     json.dump(s, open(p, "w"), indent=2)
 PY
 rm -rf "$HOME/.claude/omega" "$HOME/.claude/skills/omega-loop"
-echo "OMEGA-LOOP rimosso."
+echo "OMEGA-LOOP removed."

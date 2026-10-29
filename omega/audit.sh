@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# audit.sh <iteration> — review isolato di .omega/drafts/latest.diff. Stdout = JSON verdetto.
-# Failover: prova i provider in ordine; se uno è esaurito/errore/non restituisce JSON valido, passa all'altro.
-# Ordine: codex poi claude (se codex disponibile), altrimenti solo claude. Se claude è esaurito, codex fa da vice.
+# audit.sh <iteration> — isolated review of .omega/drafts/latest.diff. Stdout = JSON verdict.
+# Failover: tries providers in order; if one is exhausted/errors/returns no valid JSON, moves to the next.
+# Order: codex then claude (if codex is available), otherwise claude then codex. If claude is exhausted, codex steps in.
 set -u
 O="$(cd "$(dirname "$0")" && pwd)"; IT="${1:-1}"
 python3 "$O/skills/fallback_manager.py" >/dev/null
@@ -17,7 +17,7 @@ $(cat .omega/PLAN.md 2>/dev/null)
 ## DIFF
 $(cat .omega/drafts/latest.diff)"
 
-# estrae l'ultimo oggetto JSON con "verdict" dall'output grezzo; exit 1 se assente
+# extracts the last JSON object with "verdict" from the raw output; exit 1 if none
 extract() { python3 -c '
 import sys,json
 t=sys.stdin.read(); d=json.JSONDecoder(); best=None; i=t.find("{")
@@ -41,8 +41,8 @@ for prov in $ORDER; do
     echo "$(date +%FT%T) audit it=$IT provider=$prov" >> .omega/ledger/DECISIONS.log
     echo "$V"; exit 0
   fi
-  echo "[audit] $prov fallito/esaurito, provo il successivo" >&2
+  echo "[audit] $prov failed/exhausted, trying the next one" >&2
   echo "$(date +%FT%T) audit it=$IT provider=$prov FAILED: $(printf '%s' "$OUT" | tail -c 200 | tr '\n' ' ')" >> .omega/ledger/DECISIONS.log
 done
-echo '{"verdict":"REJECTED","critical_flaws":["nessun provider ha prodotto un verdetto valido"],"required_remediations":["riprovare più tardi o chiedere all utente"],"security_score":0}'
+echo '{"verdict":"REJECTED","critical_flaws":["no provider produced a valid verdict"],"required_remediations":["retry later or ask the user"],"security_score":0}'
 exit 2

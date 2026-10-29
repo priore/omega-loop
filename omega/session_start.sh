@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Hook SessionStart: rileva provider (senza scrivere file) e inietta il contesto OMEGA nella nuova chat.
+# SessionStart hook: detects providers (without writing files) and injects the OMEGA context into the new chat.
 S=$(OMEGA_NOWRITE=1 python3 "$HOME/.claude/omega/skills/fallback_manager.py" 2>/dev/null)
 MODE=$(printf '%s' "$S" | python3 -c 'import json,sys;print(json.load(sys.stdin)["mode"])' 2>/dev/null || echo UNKNOWN)
 python3 - "$MODE" <<'PY'

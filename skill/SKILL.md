@@ -9,10 +9,10 @@ Tooling lives in `~/.claude/omega/`. Per-repo state lives in `.omega/` of the cu
 
 Rules: the writer never reviews its own diff. Project CLAUDE.md rules still win (commit-per-phase confirmations, CHANGELOG, etc.). Never use `--no-verify`.
 
-## Failover tra provider
-- Codex senza token/errore: il suo ruolo (architect, builder, auditor) passa subito a Claude, senza fermare il loop. `audit.sh` lo fa da solo (codex → claude).
-- Claude senza token: `audit.sh` ripiega su Codex; per il resto il loop riprende da terminale con `~/.claude/omega/codex_takeover.sh` (legge `.omega/` e continua). Claude non può lanciarlo se è esaurito: chiedi all'utente di farlo, e tieni sempre STATE.json/DECISIONS.log aggiornati così la ripresa è possibile.
-- Ogni passaggio di provider va scritto in DECISIONS.log.
+## Provider failover
+- Codex out of tokens/erroring: its role (architect, builder, auditor) moves to Claude immediately, without stopping the loop. `audit.sh` does this by itself (codex → claude).
+- Claude out of tokens: `audit.sh` falls back to Codex; the rest of the loop resumes from the terminal with `~/.claude/omega/codex_takeover.sh` (reads `.omega/` and continues). Claude cannot launch it once exhausted: ask the user to do it, and always keep STATE.json/DECISIONS.log current so resuming is possible.
+- Every provider switch must be written to DECISIONS.log.
 
 ## Phase 0 — Bootstrap (every run, re-detects Codex)
 1. `python3 ~/.claude/omega/skills/fallback_manager.py` → `.omega/PROVIDER_STATE.json`. Report mode: `HYBRID_MULTI_MODEL` (codex ok) or `CLAUDE_ISOLATED_FULL_STACK`.

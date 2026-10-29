@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Rileva provider disponibili. Eseguito a ogni run: Codex attivato dopo viene visto da solo.
-Scrive .omega/PROVIDER_STATE.json nella cwd (repo corrente)."""
+"""Detects available providers. Runs on every run: Codex enabled later is picked up automatically.
+Writes .omega/PROVIDER_STATE.json in the cwd (current repo)."""
 import subprocess, json, os, shutil, datetime
 
 def run(cmd):
@@ -11,12 +11,12 @@ def run(cmd):
 
 def codex_ok():
     if not shutil.which("codex"):
-        return False, "binary assente"
+        return False, "binary not found"
     if (r := run(["codex", "--version"])) is None or r.returncode != 0:
-        return False, "--version fallita"
+        return False, "--version failed"
     r = run(["codex", "login", "status"])
     if r is None or r.returncode != 0:
-        return False, "non loggato (codex login)"
+        return False, "not logged in (codex login)"
     return True, "ok"
 
 def main():
@@ -24,7 +24,7 @@ def main():
     state = {
         "codex_available": ok,
         "codex_detail": why,
-        # ChatGPT non ha CLI: ruolo architect sempre su Claude persona (o codex se disponibile)
+        # ChatGPT has no CLI: architect role always on the Claude persona (or codex if available)
         "chatgpt_available": False,
         "mode": "HYBRID_MULTI_MODEL" if ok else "CLAUDE_ISOLATED_FULL_STACK",
         "checked_at": datetime.datetime.now().isoformat(timespec="seconds"),
