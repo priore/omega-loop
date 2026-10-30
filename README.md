@@ -1,6 +1,6 @@
 # OMEGA-LOOP
 
-Version 1.0.0 · [MIT](LICENSE)
+Version 1.1.0 · [MIT](LICENSE)
 
 **A workflow where one AI writes the code and another one checks it, before you ever see it.**
 
@@ -88,6 +88,7 @@ Done. The installer:
 
 * copies the files into `~/.claude/` (Claude Code's folder, yours alone);
 * adds a small automatic startup hook so OMEGA-LOOP is ready in every new chat;
+* sets model routing: `opusplan` (Opus for planning, Sonnet for everything else) and `CLAUDE_CODE_SUBAGENT_MODEL=haiku` for subagents;
 * tells git to ignore the `.omega/` folder in all your projects, so the work log never ends up in your commits.
 
 It is safe to re-run to update. Before touching Claude Code's settings it saves a copy (`settings.json.omega.bak`).
