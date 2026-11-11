@@ -9,6 +9,6 @@ J() { printf '%s' "$S" | python3 -c "import json,sys;d=json.load(sys.stdin);prin
 D=$(J 'd["delegate"]')
 if [ "$D" = qwen ]; then
   export ANTHROPIC_BASE_URL=$(J 'd["qwen"]["url"]') ANTHROPIC_AUTH_TOKEN=local ANTHROPIC_API_KEY=
-  exec claude -p "$1" --model "$(J 'd["qwen"]["model"]')" --no-session-persistence --tools "Read,Grep,Glob" </dev/null
+  exec claude -p "$1" --bare --model "$(J 'd["qwen"]["model"]')" --no-session-persistence --tools "Read,Grep,Glob" </dev/null
 fi
 exec claude -p "$1" --model "$D" --no-session-persistence --tools "Read,Grep,Glob" </dev/null

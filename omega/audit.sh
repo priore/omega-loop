@@ -40,7 +40,7 @@ run_qwen() {
   url=$(printf '%s' "$q" | python3 -c 'import json,sys;q=json.load(sys.stdin)["qwen"];print(q["url"] if q else "")')
   [ -n "$url" ] || return 1
   model=$(printf '%s' "$q" | python3 -c 'import json,sys;print(json.load(sys.stdin)["qwen"]["model"])')
-  ANTHROPIC_BASE_URL=$url ANTHROPIC_AUTH_TOKEN=local ANTHROPIC_API_KEY= claude -p "$P" --model "$model" --no-session-persistence --tools "" </dev/null 2>&1
+  ANTHROPIC_BASE_URL=$url ANTHROPIC_AUTH_TOKEN=local ANTHROPIC_API_KEY= claude -p "$P" --bare --model "$model" --no-session-persistence --tools "" </dev/null 2>&1
 }
 
 if [ "$MODE" = HYBRID_MULTI_MODEL ]; then ORDER="codex qwen claude"; else ORDER="qwen claude codex"; fi
