@@ -22,9 +22,9 @@ p = os.path.expanduser("~/.claude/settings.json")
 s = json.load(open(p)) if os.path.exists(p) else {}
 if os.path.exists(p): shutil.copy(p, p + ".omega.bak")
 cmd = "bash $HOME/.claude/omega/session_start.sh"
-# model routing: Opus plans, Sonnet builds, Haiku for subagents
-s["model"] = "opusplan"
-s.setdefault("env", {})["CLAUDE_CODE_SUBAGENT_MODEL"] = "haiku"
+# model routing is resolved at runtime (session_start.sh); drop the fixed 1.1.0 routing if present
+if s.get("model") == "opusplan": del s["model"]
+if s.get("env", {}).get("CLAUDE_CODE_SUBAGENT_MODEL") == "haiku": del s["env"]["CLAUDE_CODE_SUBAGENT_MODEL"]
 lst = s.setdefault("hooks", {}).setdefault("SessionStart", [])
 if not any(h.get("command") == cmd for e in lst for h in e.get("hooks", [])):
     lst.append({"hooks": [{"type": "command", "command": cmd}]})

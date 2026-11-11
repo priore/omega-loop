@@ -25,6 +25,13 @@ Notes on what is real:
 * There is no `--fresh-session` / `--persona` flag. A "fresh session" is `claude -p <prompt> --no-session-persistence --tools ""`; a "persona" is a role stated in the prompt.
 * Provider modes: `HYBRID_MULTI_MODEL` (Codex binary present, `codex --version` ok, `codex login status` ok) and `CLAUDE_ISOLATED_FULL_STACK` (otherwise).
 
+### Model routing (runtime)
+
+* Orchestrator = the model selected in the session (Sonnet, Opus, Fable).
+* Delegated work (`omega/subagent.sh`) and the auditor use local Qwen (Ollama `:11434` / LM Studio `:1234`, Anthropic-compatible endpoint) when detected by `fallback_manager.py`.
+* Qwen absent: Sonnet instead; Haiku if the orchestrator is already Sonnet.
+* Audit order: `codex qwen claude` (hybrid) or `qwen claude codex`.
+
 ### Failover (token exhaustion or any provider error)
 
 * **Codex unavailable or exhausted** → its role moves to Claude immediately; the loop never stops.

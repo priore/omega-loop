@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # audit.sh <iteration> — isolated review of .omega/drafts/latest.diff. Stdout = JSON verdict.
 # Failover: tries providers in order; if one is exhausted/errors/returns no valid JSON, moves to the next.
-# Order: codex then claude (if codex is available), otherwise claude then codex. If claude is exhausted, codex steps in.
+# Order: codex qwen claude (if codex is available), otherwise qwen claude codex. Qwen = local Ollama/LM Studio, skipped if absent.
+# If claude is exhausted, codex steps in.
 set -u
 O="$(cd "$(dirname "$0")" && pwd)"; IT="${1:-1}"
 python3 "$O/skills/fallback_manager.py" >/dev/null
@@ -33,7 +34,16 @@ print(json.dumps(best))'; }
 run_codex()  { codex exec --sandbox read-only --skip-git-repo-check "$P" </dev/null 2>&1; }
 run_claude() { claude -p "$P" --no-session-persistence --tools "" </dev/null 2>&1; }
 
-if [ "$MODE" = HYBRID_MULTI_MODEL ]; then ORDER="codex claude"; else ORDER="claude codex"; fi
+run_qwen() {
+  local q; q=$(OMEGA_NOWRITE=1 python3 "$O/skills/fallback_manager.py") || return 1
+  local url model
+  url=$(printf '%s' "$q" | python3 -c 'import json,sys;q=json.load(sys.stdin)["qwen"];print(q["url"] if q else "")')
+  [ -n "$url" ] || return 1
+  model=$(printf '%s' "$q" | python3 -c 'import json,sys;print(json.load(sys.stdin)["qwen"]["model"])')
+  ANTHROPIC_BASE_URL=$url ANTHROPIC_AUTH_TOKEN=local ANTHROPIC_API_KEY= claude -p "$P" --model "$model" --no-session-persistence --tools "" </dev/null 2>&1
+}
+
+if [ "$MODE" = HYBRID_MULTI_MODEL ]; then ORDER="codex qwen claude"; else ORDER="qwen claude codex"; fi
 for prov in $ORDER; do
   [ "$prov" = codex ] && ! command -v codex >/dev/null && continue
   echo "[audit] provider=$prov" >&2

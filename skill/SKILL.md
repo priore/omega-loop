@@ -14,6 +14,12 @@ Rules: the writer never reviews its own diff. Project CLAUDE.md rules still win 
 - Claude out of tokens: `audit.sh` falls back to Codex; the rest of the loop resumes from the terminal with `~/.claude/omega/codex_takeover.sh` (reads `.omega/` and continues). Claude cannot launch it once exhausted: ask the user to do it, and always keep STATE.json/DECISIONS.log current so resuming is possible.
 - Every provider switch must be written to DECISIONS.log.
 
+## Model routing (runtime)
+Orchestrator = the model selected in the session (Sonnet, Opus, Fable). Everything else goes to local Qwen (Ollama :11434 / LM Studio :1234) when available.
+- Qwen unavailable: Sonnet replaces it; if Sonnet is already the orchestrator, Haiku is used.
+- Delegate read-only side tasks (searches, summaries, validations) with `OMEGA_MAIN_MODEL=<your model> ~/.claude/omega/subagent.sh "<prompt>"` instead of the Agent tool. `PROVIDER_STATE.json` shows `qwen` and `delegate`.
+- Audit order in `audit.sh`: codex, qwen, claude (Claude-only mode: qwen, claude, codex). Log every routing change in DECISIONS.log.
+
 ## Phase 0 — Bootstrap (every run, re-detects Codex)
 1. `python3 ~/.claude/omega/skills/fallback_manager.py` → `.omega/PROVIDER_STATE.json`. Report mode: `HYBRID_MULTI_MODEL` (codex ok) or `CLAUDE_ISOLATED_FULL_STACK`.
 2. Write `.omega/STATE.json` `{"state":"RECON","iteration":0}`. Append every transition/decision to `.omega/ledger/DECISIONS.log`.

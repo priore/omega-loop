@@ -1,6 +1,6 @@
 # OMEGA-LOOP
 
-Version 1.1.0 · [MIT](LICENSE)
+Version 1.2.0 · [MIT](LICENSE)
 
 **A workflow where one AI writes the code and another one checks it, before you ever see it.**
 
@@ -88,10 +88,19 @@ Done. The installer:
 
 * copies the files into `~/.claude/` (Claude Code's folder, yours alone);
 * adds a small automatic startup hook so OMEGA-LOOP is ready in every new chat;
-* sets model routing: `opusplan` (Opus for planning, Sonnet for everything else) and `CLAUDE_CODE_SUBAGENT_MODEL=haiku` for subagents;
+* removes the fixed 1.1.0 routing (`opusplan`, Haiku subagents) if present: routing is now resolved at runtime (see *Model routing*);
 * tells git to ignore the `.omega/` folder in all your projects, so the work log never ends up in your commits.
 
 It is safe to re-run to update. Before touching Claude Code's settings it saves a copy (`settings.json.omega.bak`).
+
+## Model routing
+
+Your selected model (Sonnet, Opus or Fable) stays the brain and orchestrator. If a local **Qwen** is running in **LM Studio** or **Ollama**, it handles the rest: delegated side tasks (`omega/subagent.sh`) and the isolated audit.
+
+* Qwen not available: **Sonnet** takes its place.
+* Sonnet already the main model and no Qwen: **Haiku** for the rest.
+
+Detection runs at every session start and every run: start Qwen later and it is picked up automatically.
 
 ## How to use it
 
